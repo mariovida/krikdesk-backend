@@ -66,6 +66,10 @@ const loginController = async (req, res) => {
       return res.status(200).json({ error: "Invalid" });
     }
 
+    await db.query("UPDATE users SET last_login = NOW() WHERE id = ?", [
+      user.id,
+    ]);
+
     const accessToken = jwt.sign(
       { userId: user.id, email: user.email },
       process.env.JWT_SECRET,

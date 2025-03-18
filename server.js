@@ -6,6 +6,7 @@ const path = require("path");
 var https = require("follow-redirects").https;
 
 const authRoutes = require("./src/routes/authRoutes");
+const usersRoutes = require("./src/routes/usersRoutes");
 
 const corsOptions = require("./src/config/cors");
 
@@ -16,6 +17,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api", authRoutes);
+app.use("/api", usersRoutes);
 
 app.get("/api/status", (req, res) => {
   res.status(200).json({ message: "Backend is running" });
@@ -41,7 +43,10 @@ app.get("/get-users", async (req, res) => {
 
     res.status(200).json(users);
   } catch (error) {
-    console.error("Error fetching users:", error.response?.data || error.message);
+    console.error(
+      "Error fetching users:",
+      error.response?.data || error.message
+    );
     res.status(500).json({
       message: "Failed to fetch users",
       error: error.response?.data || error.message,
@@ -62,9 +67,7 @@ app.post("/create-task", async (req, res) => {
           Name: {
             title: [{ text: { content: title } }],
           },
-          Assignee: assignee
-          ? { people: [{ id: assignee }] }
-          : undefined,
+          Assignee: assignee ? { people: [{ id: assignee }] } : undefined,
           Priority: priority ? { select: { name: priority } } : undefined,
           Status: {
             status: { name: "Not Started" },
