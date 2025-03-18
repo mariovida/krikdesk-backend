@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KrikWatch Server</title>
+    <style>
+      body {
+        width: 100%;
+        height: 100vh;
+        font-family: "Arial", sans-serif;
+        background-color: #121821;
+        margin: 0;
+      }
+      .box {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 24px;
+        height: 100%;
+      }
+      img {
+        width: 100px;
+        height: 100px;
+        animation: rotateAnimation 3s linear infinite;
+      }
+      @keyframes rotateAnimation {
+        0% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-12px);
+        }
+        100% {
+          transform: translateY(0);
+        }
+      }
+      h1 {
+        font-size: 32px;
+        line-height: 36px;
+        letter-spacing: 0.5px;
+        color: #d2cfe2;
+        margin: 0;
+      }
+      p {
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 21px;
+        color: #857db3;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="box">
+      <img src="https://watch.kriktest.com/apple-touch-icon.png" />
+      <p>The server is running smoothly</p>
+    </div>
+  </body>
+</html>
