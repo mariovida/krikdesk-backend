@@ -23,10 +23,35 @@ app.get("/api/status", (req, res) => {
 const NOTION_API_KEY = process.env.NOTION_API_KEY;
 const NOTION_DATABASE_ID = process.env.NOTION_DATABASE_ID;
 const NOTION_API_URL = "https://api.notion.com/v1/pages";
+const NOTION_API_USERS = "https://api.notion.com/v1/users";
+
+app.get("/get-users", async (req, res) => {
+  try {
+    const response = await axios.get(NOTION_API_USERS, {
+      headers: {
+        Authorization: `Bearer ${NOTION_API_KEY}`,
+        "Notion-Version": "2022-06-28",
+      },
+    });
+
+    const users = response.data.results.map((user) => ({
+      id: user.id,
+      name: user.name,
+    }));
+
+    res.status(200).json(users);
+  } catch (error) {
+    console.error("Error fetching users:", error.response?.data || error.message);
+    res.status(500).json({
+      message: "Failed to fetch users",
+      error: error.response?.data || error.message,
+    });
+  }
+});
 
 // Endpoint to create a Notion task
 app.post("/create-task", async (req, res) => {
-  const { title, description } = req.body;
+  const { title, description, assignee, priority } = req.body;
 
   try {
     const response = await axios.post(
@@ -37,10 +62,23 @@ app.post("/create-task", async (req, res) => {
           Name: {
             title: [{ text: { content: title } }],
           },
+          Assignee: assignee
+          ? { people: [{ id: assignee }] }
+          : undefined,
+          Priority: priority ? { select: { name: priority } } : undefined,
           Status: {
             status: { name: "Not Started" },
           },
         },
+        children: [
+          {
+            object: "block",
+            type: "paragraph",
+            paragraph: {
+              rich_text: [{ text: { content: description } }],
+            },
+          },
+        ],
       },
       {
         headers: {
