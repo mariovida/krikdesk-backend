@@ -91,6 +91,7 @@ const loginController = async (req, res) => {
         last_name: user.last_name,
         email: user.email,
         username: user.username,
+        token: user.user_token,
       },
     });
   } catch (error) {

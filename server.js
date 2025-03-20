@@ -24,8 +24,10 @@ app.get("/api/status", (req, res) => {
 });
 const NOTION_API_KEY = process.env.NOTION_API_KEY;
 const NOTION_DATABASE_ID = process.env.NOTION_DATABASE_ID;
+const NOTION_PROJECTS_DATABASE_ID = process.env.NOTION_PROJECTS_DATABASE_ID;
 const NOTION_API_URL = "https://api.notion.com/v1/pages";
 const NOTION_API_USERS = "https://api.notion.com/v1/users";
+const NOTION_API_PROJECTS = `https://api.notion.com/v1/databases/${NOTION_PROJECTS_DATABASE_ID}/query`;
 
 app.get("/get-users", async (req, res) => {
   try {
@@ -54,9 +56,41 @@ app.get("/get-users", async (req, res) => {
   }
 });
 
+app.get("/get-projects", async (req, res) => {
+  try {
+    const response = await axios.post(
+      NOTION_API_PROJECTS,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${NOTION_API_KEY}`,
+          "Notion-Version": "2022-06-28",
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const projects = response.data.results.map((project) => ({
+      id: project.id,
+      name: project.properties.Name?.title[0]?.plain_text || "Untitled",
+    }));
+
+    res.status(200).json(projects);
+  } catch (error) {
+    console.error(
+      "Error fetching projects from Notion:",
+      error.response?.data || error.message
+    );
+    res.status(500).json({
+      message: "Failed to fetch projects",
+      error: error.response?.data || error.message,
+    });
+  }
+});
+
 // Endpoint to create a Notion task
 app.post("/create-task", async (req, res) => {
-  const { title, description, assignee, priority } = req.body;
+  const { title, description, assignee, priority, selectedProject } = req.body;
 
   try {
     const response = await axios.post(
@@ -72,6 +106,9 @@ app.post("/create-task", async (req, res) => {
           Status: {
             status: { name: "Not Started" },
           },
+          Project: selectedProject
+          ? { relation: [{ id: selectedProject }] }
+          : undefined,
         },
         children: [
           {
