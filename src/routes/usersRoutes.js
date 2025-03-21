@@ -7,6 +7,7 @@ const {
   updateUser,
   changePassword,
   toggleUserVerification,
+  getUserRole
 } = require("../controllers/usersController");
 const { authMiddleware } = require("../middleware/authMiddleware");
 
@@ -23,5 +24,6 @@ router.put(
   authMiddleware,
   toggleUserVerification
 );
+router.get("/users/user-role", authMiddleware, getUserRole)
 
 module.exports = router;

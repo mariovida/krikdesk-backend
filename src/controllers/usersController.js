@@ -293,6 +293,25 @@ const toggleUserVerification = async (req, res) => {
   }
 };
 
+const getUserRole = async (req, res) => {
+  const { token } = req.query;
+  
+  try {
+    const [user] = await db.query("SELECT role FROM users WHERE user_token = ?", [
+      token,
+    ]);
+
+    if (user.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.json({ role: user[0].role });
+  } catch (error) {
+    console.error("Error fetching user role:", error);
+    return res.status(500).json({ message: "Error fetching user role" });
+  }
+};
+
 // Delete a user
 /*
 const deleteUser = async (req, res) => {
@@ -325,5 +344,6 @@ module.exports = {
   setPassword,
   updateUser,
   toggleUserVerification,
+  getUserRole,
   //deleteUser,
 };

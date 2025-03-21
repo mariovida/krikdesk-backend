@@ -86,6 +86,7 @@ const loginController = async (req, res) => {
       success: true,
       accessToken,
       refreshToken,
+      role: user.role,
       user: {
         first_name: user.first_name,
         last_name: user.last_name,
