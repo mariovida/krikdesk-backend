@@ -64,23 +64,23 @@ const getUserId = async (req, res) => {
 
 // Create a new user
 const createUser = async (req, res) => {
-  const { first_name, last_name, email } = req.body;
+  const { first_name, last_name, email, username, role } = req.body;
   const krikemDefaultMail = process.env.KRIKWATCH_DEFAULT_MAIL;
 
-  if (!first_name || !last_name || !email) {
+  if (!first_name || !last_name || !username || !email) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
   try {
     const [existingUser] = await db.query(
-      "SELECT * FROM users WHERE email = ?",
-      [email]
+      "SELECT * FROM users WHERE username = ?",
+      [username]
     );
 
     if (existingUser.length > 0) {
       return res
         .status(200)
-        .json({ message: "User with this email already exists" });
+        .json({ message: "User with this username already exists" });
     }
 
     const passwordRequestToken = generateRandomToken(24);
@@ -88,14 +88,22 @@ const createUser = async (req, res) => {
 
     const [result] = await db.query(
       `INSERT INTO users 
-      (first_name, last_name, email, password, password_request_token, date_created, is_verified, user_token) 
-      VALUES (?, ?, ?, '', ?, NOW(), 0, ?)`,
-      [first_name, last_name, email, passwordRequestToken, userToken]
+      (first_name, last_name, email, username, password, role, password_request_token, date_created, is_verified, user_token) 
+      VALUES (?, ?, ?, ?, '', ?, ?, NOW(), 0, ?)`,
+      [
+        first_name,
+        last_name,
+        email,
+        username,
+        role,
+        passwordRequestToken,
+        userToken,
+      ]
     );
 
     const emailTemplatePath = path.join(
       __dirname,
-      "../templates/confirmAccount.html"
+      "../templates/setPassword.html"
     );
     const emailTemplate = fs.readFileSync(emailTemplatePath, "utf-8");
 
@@ -126,7 +134,7 @@ const createUser = async (req, res) => {
     );
 
     const mailOptions = {
-      from: `"KrikWatch" <${krikemDefaultMail}>`,
+      from: `"KrikDesk Ticketing" <${krikemDefaultMail}>`,
       to: email,
       subject: "Confirm your account",
       html: populatedTemplate,
@@ -295,11 +303,12 @@ const toggleUserVerification = async (req, res) => {
 
 const getUserRole = async (req, res) => {
   const { token } = req.query;
-  
+
   try {
-    const [user] = await db.query("SELECT role FROM users WHERE user_token = ?", [
-      token,
-    ]);
+    const [user] = await db.query(
+      "SELECT role FROM users WHERE user_token = ?",
+      [token]
+    );
 
     if (user.length === 0) {
       return res.status(404).json({ message: "User not found" });
